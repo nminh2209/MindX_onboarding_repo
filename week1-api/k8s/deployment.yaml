@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: week1-api-deployment
+  labels:
+    app: week1-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: week1-api
+  template:
+    metadata:
+      labels:
+        app: week1-api
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: week1-api
+        image: mindxweek1minhnhacr.azurecr.io/week1-api:v1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: PORT
+          value: "3000"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5

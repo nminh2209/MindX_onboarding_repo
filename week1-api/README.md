@@ -105,7 +105,72 @@ This API has been successfully deployed to Azure Cloud following MindX Week 1 re
 
 - **Task 1.6**: Verify API deployment (✅ Completed - all endpoints tested)
 - **Task 1.7**: Repository setup with Git
-- **Step 2**: Deploy to Azure Kubernetes Service (AKS)
+- **Step 2**: Deploy to Azure Kubernetes Service (AKS) (✅ Completed)
 - **Step 3-6**: Complete full-stack application with React frontend, authentication, and custom domain
+
+## 🚢 Azure Kubernetes Service Deployment (Week 1 Step 2 Completed)
+
+The API has been successfully deployed to Azure Kubernetes Service (AKS) for advanced container orchestration:
+
+### ✅ Completed Step 2 Tasks
+
+**Task 2.1: Create AKS Cluster**
+- ✅ AKS cluster created: `mindx-week1-aks`
+- ✅ Single node configuration with managed identity
+- ✅ SSH keys generated for secure access
+
+**Task 2.2: Configure Cluster Access**
+- ✅ kubectl credentials configured and merged
+- ✅ Cluster connectivity verified (`kubectl get nodes` ✓)
+- ✅ AKS cluster ready for deployments
+
+**Task 2.3: Create Kubernetes Manifests**
+- ✅ `k8s/deployment.yaml`: 2-replica deployment with health checks and resource limits
+- ✅ `k8s/service.yaml`: ClusterIP service for internal cluster communication
+- ✅ Image pull secret created for ACR authentication
+
+**Task 2.4: Deploy API to AKS from ACR**
+- ✅ Kubernetes manifests applied successfully
+- ✅ Pods pulling container images from Azure Container Registry
+- ✅ Authentication working via Kubernetes image pull secrets
+
+**Task 2.5: Expose API Service**
+- ✅ ClusterIP service created with internal IP `10.0.44.121`
+- ✅ Service endpoints registered for both pod instances
+- ✅ Internal service accessible on port 3000
+
+**Task 2.6: Verify Internal AKS Deployment**
+- ✅ All pods running successfully (2/2 replicas)
+- ✅ Health checks passing: `{"status":"healthy","timestamp":"2025-11-26T10:57:28.669Z","service":"week1-api"}`
+- ✅ Service routing verified through internal testing
+
+**Task 2.7: Update Repository**
+- ✅ Kubernetes manifests added to repository
+- ✅ Documentation updated with AKS deployment details
+
+### 🏗️ AKS Infrastructure Details
+
+- **AKS Cluster**: `mindx-week1-aks` (1 node, Southeast Asia region)
+- **Pods**: 2 API instances running with rolling updates
+- **Service**: `week1-api-service` (ClusterIP: `10.0.44.121:3000`)
+- **Authentication**: ACR access via Kubernetes image pull secrets
+- **Health Monitoring**: Automatic liveness and readiness probes
+- **Resource Limits**: CPU: 100m-200m, Memory: 128Mi-256Mi per pod
+
+### 🔄 Deployment Comparison
+
+| Deployment Method | URL | Access Type | Use Case |
+|-------------------|-----|-------------|----------|
+| **Azure Web App** | `https://mindx-week1-api.azurewebsites.net` | Public HTTPS | Simple deployment, external access |
+| **AKS Internal** | `week1-api-service:3000` | Internal cluster | Microservices, advanced orchestration |
+
+### 📋 Next Steps
+
+- **Step 3**: Install ingress controller for external AKS access
+- **Step 4**: Deploy React frontend to AKS
+- **Step 5**: Implement authentication (OpenID/custom)
+- **Step 6**: Setup custom domain with HTTPS
+
+This AKS deployment demonstrates enterprise-grade Kubernetes practices: pod replication, service discovery, health monitoring, and container orchestration.
 
 This deployment demonstrates core DevOps practices: containerization, container registries, and cloud deployment with Infrastructure as Code principles.
