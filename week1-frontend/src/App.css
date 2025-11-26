@@ -1,0 +1,86 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  padding: 20px;
+}
+
+.api-section {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #61dafb;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  max-width: 800px;
+  width: 100%;
+}
+
+.api-section h2 {
+  color: #61dafb;
+  margin-top: 0;
+}
+
+.api-response {
+  background-color: #2d2d2d;
+  padding: 15px;
+  border-radius: 4px;
+  text-align: left;
+  margin-top: 10px;
+}
+
+.api-response pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 14px;
+  color: #61dafb;
+}
+
+.refresh-btn {
+  background-color: #61dafb;
+  border: none;
+  color: #282c34;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 20px 0;
+  transition: background-color 0.3s;
+}
+
+.refresh-btn:hover {
+  background-color: #21b4d6;
+}
+
+.error {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.info-section {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.info-section h3 {
+  color: #61dafb;
+  margin-top: 0;
+}
+
+.info-section p {
+  margin: 5px 0;
+  color: #cccccc;
+}
