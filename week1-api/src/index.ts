@@ -15,6 +15,9 @@ const OIDC_CLIENT_ID = 'mindx-onboarding';
 const OIDC_CLIENT_SECRET = 'cHJldmVudGJvdW5kYmF0dHJlZWV4cGxvcmVjZWxsbmVydm91c3ZhcG9ydGhhbnN0ZWU=';
 const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/auth/callback';
 
+// Frontend URL for redirects after auth
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+
 // JWT Secret for signing tokens
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -26,7 +29,7 @@ let authorizationEndpoint: string = '';
 app.use(express.json());
 // Enable CORS for frontend
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: FRONTEND_URL,
   credentials: true
 }));
 
@@ -158,7 +161,7 @@ app.get('/auth/callback', async (req: Request, res: Response) => {
     const jwtToken = jwt.sign(userInfo, JWT_SECRET, { expiresIn: '1h' });
 
     // Redirect to frontend with token
-    const redirectUrl = `http://localhost:3001/auth-landing?token=${jwtToken}`;
+    const redirectUrl = `${FRONTEND_URL}/auth-landing?token=${jwtToken}`;
     console.log('Redirecting to frontend with token:', redirectUrl);
     res.redirect(redirectUrl);
   } catch (error) {
