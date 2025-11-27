@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: week1-frontend
-        image: mindxweek1minhnhacr.azurecr.io/week1-frontend:v3
+        image: mindxweek1minhnhacr.azurecr.io/week1-frontend:v5
         ports:
         - containerPort: 80
         resources:

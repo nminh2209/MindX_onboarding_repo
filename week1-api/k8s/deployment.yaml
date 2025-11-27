@@ -18,7 +18,7 @@ spec:
       - name: acr-secret
       containers:
       - name: week1-api
-        image: mindxweek1minhnhacr.azurecr.io/week1-api:v1
+        image: mindxweek1minhnhacr.azurecr.io/week1-api:v4
         ports:
         - containerPort: 3000
         env:
