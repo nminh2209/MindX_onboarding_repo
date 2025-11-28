@@ -1,6 +1,10 @@
 # Build stage
 FROM node:18-alpine AS builder
 
+# Set environment variable for production build
+ARG REACT_APP_API_URL=https://mindx-minhnh.135.171.192.18.nip.io/api
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 WORKDIR /app
 
 # Copy package files
@@ -12,7 +16,7 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application with the environment variable
 RUN npm run build
 
 # Production stage
