@@ -40,7 +40,7 @@
    ```
    Admin (gear icon) → Create Property
    
-   Property Name: MindX Week 1 App
+   Property Name: week2mindx
    Reporting Time Zone: (GMT+07:00) Bangkok
    Currency: USD
    
