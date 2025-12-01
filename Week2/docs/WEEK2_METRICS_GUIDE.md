@@ -1,4 +1,4 @@
-# Week 2: Metrics Setup - Complete Guide
+ Week 2: Metrics Setup - Complete Guide
 
 **Date:** November 29, 2025  
 **Engineer:** Minh Nguyen (minhnh@mindx.com.vn)  
