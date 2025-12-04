@@ -1,6 +1,16 @@
 import type { Request, Response } from 'express';
 import * as appInsights from 'applicationinsights';
 import { searchKnowledge } from '../services/knowledge.js';
+import { executeTool } from '../services/mcp-tools.js';
+import { getHistory, addMessage } from '../services/conversation-memory.js';
+import { 
+  trackAIResponseTime, 
+  trackAITokenUsage, 
+  trackRAGUsage, 
+  trackToolExecution,
+  trackFeatureUsage,
+  trackAIError 
+} from '../services/metrics.js';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
@@ -52,12 +62,90 @@ export async function handleChat(req: Request, res: Response) {
       return res.status(500).json({ error: 'OpenRouter API key not configured' });
     }
 
-    // Get the last user message for RAG search
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-    let contextMessages = [...messages];
+    // Get user ID from JWT token
+    const userId = (req as any).user?.sub || 'anonymous';
+    
+    // Load conversation history
+    const history = getHistory(userId, 10); // Last 10 messages
+    
+    // Combine history with new messages (avoid duplicates)
+    const lastHistoryMessage = history[history.length - 1];
+    const firstNewMessage = messages[0];
+    const isDuplicate = lastHistoryMessage && 
+      lastHistoryMessage.role === firstNewMessage.role && 
+      lastHistoryMessage.content === firstNewMessage.content;
+    
+    let allMessages = isDuplicate ? [...history, ...messages.slice(1)] : [...history, ...messages];
+    
+    console.log(`💬 User ${userId}: ${history.length} history + ${messages.length} new = ${allMessages.length} total`);
 
-    // Perform RAG search if there's a user query
+    // Get the last user message for RAG search and tool detection
+    const lastUserMessage = allMessages.filter(m => m.role === 'user').pop();
+    let contextMessages = [...allMessages];
+    
+    // Detect and execute tools first
     if (lastUserMessage) {
+      const userQuery = lastUserMessage.content.toLowerCase();
+      let toolResult = null;
+      
+      // Check for database query intent
+      if (userQuery.includes('my profile') || userQuery.includes('my email') || userQuery.includes('my user')) {
+        console.log('🔧 Executing tool: query_database');
+        const toolStart = Date.now();
+        try {
+          toolResult = await executeTool('query_database', { query: lastUserMessage.content });
+          trackToolExecution('query_database', Date.now() - toolStart, true);
+          trackFeatureUsage('tool_call', userId);
+        } catch (error: any) {
+          trackToolExecution('query_database', Date.now() - toolStart, false, error.message);
+        }
+      }
+      // Check for knowledge search intent (different from RAG - explicit search)
+      else if (userQuery.includes('search knowledge') || userQuery.includes('find in knowledge')) {
+        console.log('🔧 Executing tool: search_knowledge');
+        const toolStart = Date.now();
+        const searchQuery = lastUserMessage.content.replace(/search knowledge (for|about)?/i, '').trim();
+        try {
+          toolResult = await executeTool('search_knowledge', { query: searchQuery });
+          trackToolExecution('search_knowledge', Date.now() - toolStart, true);
+          trackFeatureUsage('tool_call', userId);
+        } catch (error: any) {
+          trackToolExecution('search_knowledge', Date.now() - toolStart, false, error.message);
+        }
+      }
+      // Check for API call intent
+      else if (userQuery.includes('weather') || userQuery.includes('news')) {
+        console.log('🔧 Executing tool: call_api');
+        const toolStart = Date.now();
+        // Example: call a weather API
+        if (userQuery.includes('weather')) {
+          try {
+            // Hanoi, Vietnam coordinates: 21.0285, 105.8542
+            toolResult = await executeTool('call_api', {
+              url: 'https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true&timezone=Asia/Ho_Chi_Minh',
+              method: 'GET'
+            });
+            trackToolExecution('call_api', Date.now() - toolStart, true);
+            trackFeatureUsage('tool_call', userId);
+          } catch (error: any) {
+            trackToolExecution('call_api', Date.now() - toolStart, false, error.message);
+          }
+        }
+      }
+      
+      // If a tool was executed, add its result to context
+      if (toolResult) {
+        const toolContext: ChatMessage = {
+          role: 'system',
+          content: `Tool executed successfully. Result:\n${JSON.stringify(toolResult, null, 2)}\n\nUse this information to answer the user's question.`
+        };
+        contextMessages = [toolContext, ...messages];
+        console.log('✅ Tool result added to context');
+      }
+    }
+
+    // Perform RAG search if there's a user query (and no tool was executed)
+    if (lastUserMessage && contextMessages.length === allMessages.length) {
       try {
         const knowledgeResults = await searchKnowledge(lastUserMessage.content, 3);
         
@@ -73,12 +161,16 @@ export async function handleChat(req: Request, res: Response) {
           };
           
           // Insert context before the last user message
-          contextMessages = [systemContext, ...messages];
+          contextMessages = [systemContext, ...allMessages];
           
           console.log(`📚 RAG: Found ${knowledgeResults.length} relevant documents`);
+          trackRAGUsage(knowledgeResults.length, knowledgeResults[0].score, true);
+          trackFeatureUsage('rag_search', userId);
         }
       } catch (ragError) {
         console.error('⚠️ RAG search failed, continuing without context:', ragError);
+        trackRAGUsage(0, 0, false);
+        trackAIError('RAG_FAILURE', ragError instanceof Error ? ragError.message : 'Unknown error', { userId });
         // Continue without RAG context - don't fail the whole request
       }
     }
@@ -168,9 +260,20 @@ export async function handleChat(req: Request, res: Response) {
       }
 
       res.end();
+      
+      // Save messages to conversation history
+      if (lastUserMessage) {
+        addMessage(userId, 'user', lastUserMessage.content);
+      }
+      if (fullResponse) {
+        addMessage(userId, 'assistant', fullResponse);
+      }
 
-      // Track metrics
+      // Track comprehensive metrics
       const duration = Date.now() - startTime;
+      trackAIResponseTime(duration, model, true);
+      trackFeatureUsage('chat', userId);
+      
       appInsights.defaultClient?.trackMetric({
         name: 'AIChatStreamDuration',
         value: duration
@@ -215,6 +318,27 @@ export async function handleChat(req: Request, res: Response) {
 
       const data = await response.json() as OpenRouterResponse;
       const duration = Date.now() - startTime;
+      
+      // Save messages to conversation history
+      const userId = (req as any).user?.sub || 'anonymous';
+      if (lastUserMessage) {
+        addMessage(userId, 'user', lastUserMessage.content);
+      }
+      const assistantMessage = data.choices?.[0]?.message?.content;
+      if (assistantMessage) {
+        addMessage(userId, 'assistant', assistantMessage);
+      }
+      
+      // Track comprehensive metrics
+      trackAIResponseTime(duration, model, true);
+      trackFeatureUsage('chat', userId);
+      if (data.usage) {
+        trackAITokenUsage(
+          data.usage.prompt_tokens,
+          data.usage.completion_tokens,
+          model
+        );
+      }
 
       // Track metrics
       appInsights.defaultClient?.trackMetric({

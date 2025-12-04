@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ingestDocuments, initializeCollection } from '../services/knowledge.js';
+import { trackKnowledgeIngestion, trackFeatureUsage } from '../services/metrics.js';
 
 interface IngestRequest {
   documents: Array<{
@@ -10,8 +11,10 @@ interface IngestRequest {
 }
 
 export async function handleIngest(req: Request, res: Response): Promise<void> {
+  const startTime = Date.now();
   try {
     const { documents } = req.body as IngestRequest;
+    const userId = (req as any).user?.sub || 'anonymous';
 
     if (!documents || !Array.isArray(documents) || documents.length === 0) {
       res.status(400).json({ 
@@ -26,6 +29,11 @@ export async function handleIngest(req: Request, res: Response): Promise<void> {
 
     // Ingest documents
     await ingestDocuments(documents);
+    
+    // Track metrics
+    const duration = Date.now() - startTime;
+    trackKnowledgeIngestion(documents.length, true, duration);
+    trackFeatureUsage('knowledge_ingest', userId);
 
     res.json({
       success: true,
@@ -34,6 +42,9 @@ export async function handleIngest(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('Document ingestion error:', error);
+    const duration = Date.now() - startTime;
+    trackKnowledgeIngestion(0, false, duration);
+    
     res.status(500).json({
       error: 'Ingestion failed',
       message: error instanceof Error ? error.message : 'Unknown error',
