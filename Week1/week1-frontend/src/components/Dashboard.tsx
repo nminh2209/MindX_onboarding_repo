@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import UserProfile from './UserProfile';
 import Chat from './Chat';
 import KnowledgeIngest from './KnowledgeIngest';
+import Onboarding from './Onboarding';
 import './Dashboard.css';
 
 interface ApiResponse {
@@ -68,9 +69,11 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+      <Onboarding />
+      
       <div className="dashboard-header">
-        <h1>Week 1 MindX Dashboard</h1>
-        <p>Authenticated API Testing Interface</p>
+        <h1>MindX AI Assistant</h1>
+        <p>Production-Ready AI Chat with RAG & MCP Tools</p>
       </div>
 
       <UserProfile />
@@ -126,9 +129,9 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="chat-section">
-        <h2>AI Chat Assistant</h2>
+        <h2>💬 AI Chat & Knowledge Base</h2>
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1', minWidth: '300px' }}>
+          <div className="knowledge-section" style={{ flex: '1', minWidth: '300px' }}>
             <KnowledgeIngest apiUrl={API_BASE_URL} />
           </div>
           <div style={{ flex: '2', minWidth: '400px' }}>
@@ -138,10 +141,12 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="dashboard-info">
-        <h3>Configuration</h3>
+        <h3>📋 Technical Details</h3>
         <p><strong>API URL:</strong> {API_BASE_URL}</p>
-        <p><strong>Authentication:</strong> JWT via API</p>
+        <p><strong>Authentication:</strong> JWT via MindX OAuth</p>
         <p><strong>Environment:</strong> {process.env.NODE_ENV}</p>
+        <p><strong>Vector DB:</strong> Qdrant v1.9.0</p>
+        <p><strong>AI Model:</strong> GPT-4o-mini (OpenRouter)</p>
       </div>
     </div>
   );

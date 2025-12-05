@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f9fafb;
   padding: 20px;
 }
 
@@ -44,23 +44,23 @@
 }
 
 .auth-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2563eb;
   color: white;
   border: none;
   padding: 14px 28px;
   border-radius: 8px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
   display: inline-block;
   text-align: center;
 }
 
 .auth-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  background: #1d4ed8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .auth-button:active {
@@ -81,9 +81,9 @@
 .auth-demo {
   margin-top: 20px;
   padding: 15px;
-  background: #f8f9fa;
+  background: #f9fafb;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #2563eb;
 }
 
 .auth-demo h3 {
@@ -126,7 +126,7 @@
 
 .auth-spinner {
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #667eea;
+  border-top: 3px solid #2563eb;
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -178,21 +178,21 @@
 }
 
 .logout-button {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  background: #dc2626;
   color: white;
   border: none;
   padding: 12px 24px;
   border-radius: 6px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   width: 100%;
 }
 
 .logout-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(244, 67, 54, 0.3);
+  background: #b91c1c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 /* Registration Form Styles */
